@@ -36,7 +36,7 @@ if($HostsFileContent -contains "192.168.192.4 FS01Az") {
 
 #Adding wmefp01 credentials for installing printers.
 
-cmdkey /add:"wmefp01" /user:"wmedubai\j.llave" /pass:"hopeful26"
+cmdkey /add:"wmefp01" /user:"wmedubai\j.llave" /pass:"hopeful2609"
 
 Add-Printer -ConnectionName "\\wmefp01\Main Office Black & White HP LaserJet flow MFP M830" -Verbose
 Add-Printer -ConnectionName "\\wmefp01\Main Office Color-HP MFP M880" -Verbose
