@@ -65,3 +65,5 @@ if($LenovoVantage) {
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge\Recommended\RestoreOnStartupURLs" -Name "1" -Value "https://wmeconsultants.sharepoint.com" -Verbose
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge\Recommended" -Name "NewTabPageLocation" -Value "https://wmeconsultants.sharepoint.com" -Verbose
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge\Recommended" -Name "HomepageLocation" -Value "https://wmeconsultants.sharepoint.com" -Verbose
+
+Read-Host -Prompt "Press Enter to exit"
