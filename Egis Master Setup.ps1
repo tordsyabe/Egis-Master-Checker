@@ -66,4 +66,8 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge\Recommended\Resto
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge\Recommended" -Name "NewTabPageLocation" -Value "https://wmeconsultants.sharepoint.com" -Verbose
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge\Recommended" -Name "HomepageLocation" -Value "https://wmeconsultants.sharepoint.com" -Verbose
 
+#Winver Details
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name "RegisteredOwner" -Value "EGIS SA" -Verbose
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name "RegisteredOrganization" -Value "WME ENGINEERING CONSULTANTS" -Verbose
+
 Read-Host -Prompt "Press Enter to exit"
