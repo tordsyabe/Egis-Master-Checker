@@ -1,4 +1,4 @@
-﻿$BasicApps = @("Sophos",
+$BasicApps = @("Sophos",
             "Symprex Email Signature",
             "Mail Manager",
             "Autodesk Navisworks Freedom",
@@ -54,10 +54,28 @@ $InstalledApps = Get-ItemProperty -Path $(
 #foreach($InstalledApp in $InstalledApps | Where-Object {$_.DisplayName -match "AutoCAD"}) {Write-Host $InstalledApp.DisplayName }
 
 echo ""
-if($Domain.Domain -eq "egis.racine.local"){Write-Host "Domain`t`t: $($Domain.Domain)" -BackgroundColor DarkGreen} else {Write-Host "Domain`t`t: $($Domain.Domain)" -BackgroundColor Red}
-Write-Host "Hostname`t: $($Hostname.Name)"
-Write-Host "Registered Org`t: $($registeredOrg.RegisteredOrganization)"
-#Write-Host "Registered Owner	: $($registeredOwner.RegisteredOwner)"
+if($Domain.Domain -eq "egis.racine.local"){
+    Write-Host "Domain`t`t: $($Domain.Domain)" -BackgroundColor DarkGreen
+} else {
+    Write-Host "Domain`t`t: $($Domain.Domain)" -BackgroundColor Red
+}
+if($Hostname.Name -match "POR800*") {
+    Write-Host "Hostname`t: $($Hostname.Name)" -BackgroundColor DarkGreen 
+} else {
+    Write-Host "Hostname`t: $($Hostname.Name)"-BackgroundColor Red
+}
+if($registeredOrg.RegisteredOrganization -eq "WME ENGINEERING CONSULTANTS"){
+
+    Write-Host "Registered Org`t: $($registeredOrg.RegisteredOrganization)" -BackgroundColor DarkGreen
+} else {
+    Write-Host "Registered Org`t: $($registeredOrg.RegisteredOrganization)" -BackgroundColor Red
+}
+if($Owner.PrimaryOwnerName -eq "EGIS SA"){
+    Write-Host "Owner`t: $($Owner.PrimaryOwnerName)" -BackgroundColor DarkGreen
+} else {
+    Write-Host "Owner`t: $($Owner.PrimaryOwnerName)" -BackgroundColor Red
+
+}
 Write-Host "Computer Desc`t: $($computerDescription.Description)"
 
 echo ""
