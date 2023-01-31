@@ -1,4 +1,4 @@
-﻿
+
 #Creating localadm local user.
 Try{
     $SecurePassword = ConvertTo-SecureString "wme@WME-2022!" -AsPlainText -Force
@@ -14,6 +14,7 @@ Try{
 Try {
 
     New-Item -Path "C:\Users\aa-sup\Desktop\egis.racine.local.txt" -ErrorAction Stop -Verbose
+    Add-Content -Path "C:\Users\aa-sup\Desktop\egis.racine.local.txt" -Value "Domaine" -Verbose
 } Catch {
     Write-Host $_
 }
@@ -26,10 +27,11 @@ Set-TimeZone -Id "Arabian Standard Time"
 #Adding 192.168.192.4 FS01Az in hosts file
 $HostsPath = "C:\Windows\System32\drivers\etc\hosts"
 $HostsFileContent = Get-Content -Path $HostsPath
-if(-Not $HostsFileContent -contains "192.168.192.4 FS01Az") {
-    Add-Content -Path $HostsPath -Value "`n192.168.192.4 FS01Az" -Verbose
-} else {
+if($HostsFileContent -contains "192.168.192.4 FS01Az") {
     Write-Host "Hosts file already has 192.168.192.4 FS01Az."
+} else {
+    Add-Content -Path $HostsPath -Value "`n192.168.192.4 FS01Az" -Verbose
+
 }
 
 #Adding wmefp01 credentials for installing printers.
