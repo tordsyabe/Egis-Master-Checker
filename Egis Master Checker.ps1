@@ -35,6 +35,15 @@ if($hostsFile | Where-Object {$_ -match "192.168.192.4*"}){
     Write-Host "Hosts file 192.168.192.4 FS01Az not found" -BackgroundColor Red
 }
 
+
+#Check Z: drive is mapped
+if(Test-Path -Path "Z:"){
+    Write-Host "Z: drive is mapped." -BackgroundColor DarkGreen
+} else {
+    Write-Host "Z: drive not found, add user access to windows credentials." -BackgroundColor Red
+}
+
+
 #Getting computer system information
 $Domain = Get-WMIObject Win32_ComputerSystem | Select Domain
 $Owner = Get-WMIObject Win32_ComputerSystem | Select PrimaryOwnerName
