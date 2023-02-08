@@ -1,13 +1,3 @@
-$BasicApps = @("Sophos",
-            "Symprex Email Signature",
-            "Mail Manager",
-            "Autodesk Navisworks Freedom",
-            "Autodesk DWG TrueView",
-            "Autodesk Design Review",
-            "Autodesk Desktop Connector"
-            "Bluebeam Revu"
-            )
-
 #Lenovo Vantage
 $LenovoVantage = Get-AppxPackage -Name "*.LenovoCompanion" | Select Name
 if($LenovoVantage.Name) {
@@ -53,14 +43,6 @@ $computerDescription = Get-WmiObject -Class Win32_OperatingSystem | Select Descr
 #$registeredOwner = Get-ItemProperty -Path ”HKLM:\Software\Microsoft\Windows NT\CurrentVersion”
 $registeredOrg = Get-ItemProperty -Path ”HKLM:\Software\Microsoft\Windows NT\CurrentVersion”
 
-#Querying installed softwares
-$InstalledApps = Get-ItemProperty -Path $(
-		'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*';
-		'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*';
-		'HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*';
-		'HKCU:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*';
-	) -ErrorAction 'SilentlyContinue'
-#foreach($InstalledApp in $InstalledApps | Where-Object {$_.DisplayName -match "AutoCAD"}) {Write-Host $InstalledApp.DisplayName }
 
 echo ""
 if($Domain.Domain -eq "egis.racine.local"){
@@ -85,7 +67,27 @@ if($Owner.PrimaryOwnerName -eq "EGIS SA"){
     Write-Host "Owner`t: $($Owner.PrimaryOwnerName)" -BackgroundColor Red
 
 }
-Write-Host "Computer Desc`t: $($computerDescription.Description)"
+
+if($computerDescription.Description -eq "Unaffected") {
+    Write-Host "Computer Desc`t: $($computerDescription.Description)" -BackgroundColor DarkBlue
+} else {
+    Write-Host "Computer Desc`t: $($computerDescription.Description)" -BackgroundColor DarkGreen
+    
+}
+
+#Check for outlook profile
+$curUser = whoami
+$user = $curUser.Split("\")
+
+echo ""
+
+if(Test-Path -Path "C:\Users\$($user[1])\Appdata\Local\Microsoft\Outlook\*.ost") {
+    Write-Host "Outlook is configure for $($user[1])" -BackgroundColor DarkGreen
+    $outlookProfiles = Get-ChildItem -Path "C:\Users\$($user[1])\Appdata\Local\Microsoft\Outlook\*.ost" | Select Name
+    $outlookProfiles
+} else {
+    Write-Host "No outlook profile configure for $($user[1])" -BackgroundColor Red
+}
 
 echo ""
 $TimeZone = Get-TimeZone | Select Id
@@ -134,11 +136,43 @@ echo ""
 echo "----- SOFTWARES -----" 
 echo ""
 
-foreach($BasicApp in $BasicApps){
-    if ($InstalledApps -match $BasicApp) {
-        $found = $InstalledApps | Where-Object { $_.DisplayName -like "$($BasicApp)*" }
+#Querying installed softwares
+$InstalledApps = Get-ItemProperty -Path $(
+		'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*';
+		'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*';
+		'HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*';
+		'HKCU:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*';
+	) -ErrorAction 'SilentlyContinue'
+#foreach($InstalledApp in $InstalledApps | Where-Object {$_.DisplayName -match "AutoCAD"}) {Write-Host $InstalledApp.DisplayName }
+
+$BasicApps = @("Sophos",
+            "Symprex Email Signature",
+            "Mail Manager",
+            "Autodesk Navisworks Freedom",
+            "Autodesk DWG TrueView",
+            "Autodesk Design Review",
+            "Autodesk Desktop Connector"
+            "Bluebeam Revu"
+            )
+$InfraApps = $BasicApps + @("Civil3D","Bentley")
+$StrApps = $BasicApps + @("Prokon","Etabs 2017","Etabs 2016","Etabs 2018","SAFE 2016","SAP2000 v19")
+$MEPApps = $BasicApps + @("Dialux 3.14", "Dialux Evo", "HAP", "AutoCAD LT", "Amtech", "IES")
+$AVITApps = $BasicApps + @("Some AVIT app")
+$PMApps = $BasicApps + @("AutoCAD LT")
+$BsSupportApps = $BasicApps + @("Some Business Support App")
+
+
+
+Function Loop-InstalledSoftware {
+    param(
+        [array]$softwareList
+    )
+
+    foreach($software in $softwareList){
+    if ($InstalledApps -match $software) {
+        $found = $InstalledApps | Where-Object { $_.DisplayName -like "$($software)*" }
         
-        Write-Host "$($BasicApp) installed...." -ForegroundColor DarkYellow
+        Write-Host "$($software) installed...." -ForegroundColor DarkYellow
 
         #for($i = 0;$i -lt $Found.count; $i++){
         #    Write-Host "-- $($Found[$i].DisplayName)" -BackgroundColor DarkGreen
@@ -162,13 +196,55 @@ foreach($BasicApp in $BasicApps){
             if($found.count -gt 1) { break }
         }
 
-        Write-Host "--------------------------"
+        Write-Host ""
     } else {
-        Write-Host "$($BasicApp) not installed" -BackgroundColor Red
-        Write-Host "--------------------------"
+        Write-Host "$($software) not installed" -BackgroundColor Red
+        Write-Host ""
 
     }
 }
+}
+
+
+Function Get-SoftwaresByDept {
+    param (
+
+        [char]$deparment
+        )
+    
+    Switch($deparment) {
+      ("i") {
+        Loop-InstalledSoftware -softwareList $InfraApps
+      }
+
+      ("s") {
+        Loop-InstalledSoftware -softwareList $StrApps
+      }
+      ("m") {
+
+        Loop-InstalledSoftware -softwareList $MEPApps
+      }
+     
+      ("a") {
+        Loop-InstalledSoftware -softwareList $AVITApps
+      }
+      ("b") {
+        Loop-InstalledSoftware -softwareList $BsSupportApps
+      }
+      ("p") {
+        Loop-InstalledSoftware -softwareList $PMApps
+      }
+      Default {
+        Loop-InstalledSoftware -softwareList $BasicApps
+      }
+    }
+   
+}
+
+$deparmentSelected = Read-Host "Which Department? Please select from choices below.`n`n[i]=Infra, [m]-MEP, [s]-Structures, [a]-AV/IT, [b]-Business Support, [p]- Project Management, [Any Key]- Unaffected"
+echo ""
+
+Get-SoftwaresByDept -deparment $deparmentSelected
 
 Read-Host -Prompt "Press Enter to exit"
 
