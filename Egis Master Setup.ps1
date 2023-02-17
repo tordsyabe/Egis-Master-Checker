@@ -45,22 +45,22 @@ cmdkey /delete:wmefp01
 
 #Install LENOVO VANTAGE
 
-$LenovoVantage = Get-AppxPackage -Name "*.LenovoCompanion"
-if($LenovoVantage) {
-    Write-Host "Lenovo Vantage is already installed."
-} else {
-    if(Test-Path -Path "E:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle"){
-        Add-AppxPackage -Path "E:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle" -Verbose
-    }
+# $LenovoVantage = Get-AppxPackage -Name "*.LenovoCompanion"
+# if($LenovoVantage) {
+#     Write-Host "Lenovo Vantage is already installed."
+# } else {
+#     if(Test-Path -Path "E:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle"){
+#         Add-AppxPackage -Path "E:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle" -Verbose
+#     }
 
-    if(Test-Path -Path "F:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle") {
-        Add-AppxPackage -Path "F:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle" -Verbose
-    }
+#     if(Test-Path -Path "F:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle") {
+#         Add-AppxPackage -Path "F:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle" -Verbose
+#     }
 
-    if(Test-Path -Path "G:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle") {
-        Add-AppxPackage -Path "G:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle" -Verbose
-    }
-}
+#     if(Test-Path -Path "G:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle") {
+#         Add-AppxPackage -Path "G:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle" -Verbose
+#     }
+# }
 #EDGE Startup
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge\Recommended\RestoreOnStartupURLs" -Name "1" -Value "https://wmeconsultants.sharepoint.com" -Verbose
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge\Recommended" -Name "NewTabPageLocation" -Value "https://wmeconsultants.sharepoint.com" -Verbose
