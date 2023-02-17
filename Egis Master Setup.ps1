@@ -1,166 +1,74 @@
-$BasicApps = @("Sophos",
-            "Symprex Email Signature",
-            "Mail Manager",
-            "Autodesk Navisworks Freedom",
-            "Autodesk DWG TrueView",
-            "Autodesk Design Review",
-            "Autodesk Desktop Connector"
-            "Bluebeam Revu"
-            )
 
-#Lenovo Vantage
-$LenovoVantage = Get-AppxPackage -Name "*.LenovoCompanion" | Select Name
-if($LenovoVantage.Name) {
-    Write-Host "Lenovo Vantage is installed, check for driver updates." -BackgroundColor DarkGreen
-} else {
-    Write-Host "Lenovo Vantage not found, please install to update lenovo drivers" -BackgroundColor Red
+#Creating localadm local user.
+Try{
+    $SecurePassword = ConvertTo-SecureString "EGIS@2013" -AsPlainText -Force
+    New-LocalUser -Name "localadm" -Password $SecurePassword -ErrorAction Stop -Verbose
+    Add-LocalGroupMember -Group "Administrators" -Member "localadm" -Verbose
+   
+} Catch {
+    Write-Host $_
 }
 
 
-#Check for localadm user
-$localadmUser = Get-LocalUser | Where-Object {$_.Name -eq "localadm"}
+#Creating egis.racine.local txt file.
+Try {
 
-if($localadmUser.Name) {
-    Write-Host "localadm user created." -BackgroundColor DarkGreen
-} else {
-    Write-Host "localadm user not found!." -BackgroundColor Red
+    New-Item -Path "C:\Users\aa-sup\Desktop\egis.racine.local.txt" -ErrorAction Stop -Verbose
+    Add-Content -Path "C:\Users\aa-sup\Desktop\egis.racine.local.txt" -Value "Domaine" -Verbose
+} Catch {
+    Write-Host $_
 }
 
-#Check if hosts file has 192.168.192.4 FS01Az
-$hostsFile = Get-Content -Path "C:\Windows\System32\drivers\etc\hosts"
+#Setting timezone to Arabian Standard Time
+Set-TimeZone -Id "Arabian Standard Time" -Verbose
 
-if($hostsFile | Where-Object {$_ -match "192.168.192.4*"}){
-    Write-Host "Hosts file has 192.168.192.4 FS01Az" -BackgroundColor DarkGreen
+
+
+#Adding 192.168.192.4 FS01Az in hosts file
+$HostsPath = "C:\Windows\System32\drivers\etc\hosts"
+$HostsFileContent = Get-Content -Path $HostsPath
+if($HostsFileContent -contains "192.168.192.4 FS01Az") {
+    Write-Host "Hosts file already has 192.168.192.4 FS01Az."
 } else {
-    Write-Host "Hosts file 192.168.192.4 FS01Az not found" -BackgroundColor Red
+    Add-Content -Path $HostsPath -Value "`n192.168.192.4 FS01Az" -Verbose
+
 }
 
-#Getting computer system information
-$Domain = Get-WMIObject Win32_ComputerSystem | Select Domain
-$Owner = Get-WMIObject Win32_ComputerSystem | Select PrimaryOwnerName
-$Hostname = Get-WMIObject Win32_ComputerSystem | Select Name
-$computerDescription = Get-WmiObject -Class Win32_OperatingSystem | Select Description
+#Adding wmefp01 credentials for installing printers.
 
-#$registeredOwner = Get-ItemProperty -Path ”HKLM:\Software\Microsoft\Windows NT\CurrentVersion”
-$registeredOrg = Get-ItemProperty -Path ”HKLM:\Software\Microsoft\Windows NT\CurrentVersion”
+cmdkey /add:"wmefp01" /user:"wmedubai\j.llave" /pass:"hopeful2609"
 
-#Querying installed softwares
-$InstalledApps = Get-ItemProperty -Path $(
-		'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*';
-		'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*';
-		'HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*';
-		'HKCU:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*';
-	) -ErrorAction 'SilentlyContinue'
-#foreach($InstalledApp in $InstalledApps | Where-Object {$_.DisplayName -match "AutoCAD"}) {Write-Host $InstalledApp.DisplayName }
+Add-Printer -ConnectionName "\\wmefp01\Main Office Black & White HP LaserJet flow MFP M830" -Verbose
+Add-Printer -ConnectionName "\\wmefp01\Main Office Color-HP MFP M880" -Verbose
+Add-Printer -ConnectionName "\\wmefp01\4Flr COLOR MFP M880" -Verbose
+cmdkey /delete:wmefp01
 
-echo ""
-if($Domain.Domain -eq "egis.racine.local"){
-    Write-Host "Domain`t`t: $($Domain.Domain)" -BackgroundColor DarkGreen
+#Install LENOVO VANTAGE
+
+$LenovoVantage = Get-AppxPackage -Name "*.LenovoCompanion"
+if($LenovoVantage) {
+    Write-Host "Lenovo Vantage is already installed."
 } else {
-    Write-Host "Domain`t`t: $($Domain.Domain)" -BackgroundColor Red
-}
-if($Hostname.Name -contains "POR800") {
-    Write-Host "Hostname`t: $($Hostname.Name)" -BackgroundColor DarkGreen 
-} else {
-    Write-Host "Hostname`t: $($Hostname.Name)"-BackgroundColor Red
-}
-if($registeredOrg.RegisteredOrganization -eq "WME ENGINEERING CONSULTANTS"){
-
-    Write-Host "Registered Org`t: $($registeredOrg.RegisteredOrganization)" -BackgroundColor DarkGreen
-} else {
-    Write-Host "Registered Org`t: $($registeredOrg.RegisteredOrganization)" -BackgroundColor Red
-}
-if($Owner.PrimaryOwnerName -eq "EGIS SA"){
-    Write-Host "Owner`t: $($Owner.PrimaryOwnerName)" -BackgroundColor DarkGreen
-} else {
-    Write-Host "Owner`t: $($Owner.PrimaryOwnerName)" -BackgroundColor Red
-
-}
-Write-Host "Computer Desc`t: $($computerDescription.Description)"
-
-echo ""
-$TimeZone = Get-TimeZone | Select Id
-if($TimeZone.Id -eq "Arabian Standard Time") {
-    Write-Host "Timezone`t:$($TimeZone.Id)" -BackgroundColor DarkGreen
-} else {
-    Write-Host "Time zone`t: Not set to Arabian Standard Time" -BackgroundColor Red
-}
-
-#Check for printers installed
-$OfficePrinters = Get-Printer | Where-Object {$_.Name -match "\\wmefp01"}
-
-if($OfficePrinters.count -gt 0) {
-    echo ""
-    foreach($Printer in $OfficePrinters){
-        Write-Host $Printer.Name
+    if(Test-Path -Path "E:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle"){
+        Add-AppxPackage -Path "E:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle" -Verbose
     }
-} else {
-    echo ""
-    Write-Host "No office printer installed on this system" -BackgroundColor Red
-}
 
-echo ""
-$EdgeStartupPage = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge\Recommended\RestoreOnStartupURLs" -Name "1"
-if($EdgeStartupPage -match "https://wmeconsultants.sharepoint.com"){
-    Write-Host "Edge startup page`t`t: $($EdgeStartupPage)"
-} else {
-    Write-Host "Edge startup page`t`t: $($EdgeStartupPage)" -BackgroundColor Red
-}
+    if(Test-Path -Path "F:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle") {
+        Add-AppxPackage -Path "F:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle" -Verbose
+    }
 
-$EdgeNewTabPage = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge\Recommended" -Name "NewTabPageLocation"
-if($EdgeNewTabPage -match "https://wmeconsultants.sharepoint.com"){
-    Write-Host "Edge new tab page`t`t: $($EdgeNewTabPage)"
-} else {
-    Write-Host "Edge new tab page`t`t: $($EdgeNewTabPage)" -BackgroundColor Red
-}
-
-$EdgeHomepageLocation = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge\Recommended" -Name "HomepageLocation"
-if($EdgeHomepageLocation -match "https://wmeconsultants.sharepoint.com"){
-    Write-Host "Edge homepage location`t`t: $($EdgeHomepageLocation)"
-} else {
-    Write-Host "Edge homepage location`t`t: $($EdgeHomepageLocation)" -BackgroundColor Red
-}
-
-echo ""
-echo "----- SOFTWARES -----" 
-echo ""
-
-foreach($BasicApp in $BasicApps){
-    if ($InstalledApps -match $BasicApp) {
-        $found = $InstalledApps | Where-Object { $_.DisplayName -like "$($BasicApp)*" }
-        
-        Write-Host "$($BasicApp) installed...." -ForegroundColor DarkYellow
-
-        #for($i = 0;$i -lt $Found.count; $i++){
-        #    Write-Host "-- $($Found[$i].DisplayName)" -BackgroundColor DarkGreen
-        #
-        #}
-
-        foreach($fou in $found) {
-            Write-Host "-- $($fou.DisplayName)" -BackgroundColor DarkGreen
-            if($fou.DisplayName -match "Sophos SSL VPN Client"){
-                $SophosConfig = Get-ChildItem -Path "C:\Program Files (x86)\Sophos\Sophos SSL VPN Client\config" -Name
-                echo ""
-                if($SophosConfig.count -gt 0){
-                    Write-Host "`t$($SophosConfig)" -BackgroundColor Blue
-                } else {
-                    Write-Host "`tNo SSL VPN config found." -BackgroundColor Red
-                }
-                
-                echo ""
-            }
-
-            if($found.count -gt 1) { break }
-        }
-
-        Write-Host "--------------------------"
-    } else {
-        Write-Host "$($BasicApp) not installed" -BackgroundColor Red
-        Write-Host "--------------------------"
-
+    if(Test-Path -Path "G:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle") {
+        Add-AppxPackage -Path "G:\Egis Master\Lenovo Vanage offline installer\LenovoCompanion_10.2110.15.MsixBundle" -Verbose
     }
 }
+#EDGE Startup
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge\Recommended\RestoreOnStartupURLs" -Name "1" -Value "https://wmeconsultants.sharepoint.com" -Verbose
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge\Recommended" -Name "NewTabPageLocation" -Value "https://wmeconsultants.sharepoint.com" -Verbose
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Edge\Recommended" -Name "HomepageLocation" -Value "https://wmeconsultants.sharepoint.com" -Verbose
+
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name "RegisteredOwner" -Value "EGIS SA" -Verbose
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name "RegisteredOrganization" -Value "WME ENGINEERING CONSULTANTS" -Verbose
+
+
 
 Read-Host -Prompt "Press Enter to exit"
-
-    
