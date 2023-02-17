@@ -31,6 +31,7 @@ if($HostsFileContent -contains "192.168.192.4 FS01Az") {
     Write-Host "Hosts file already has 192.168.192.4 FS01Az."
 } else {
     Add-Content -Path $HostsPath -Value "`n192.168.192.4 FS01Az" -Verbose
+    Add-Content -Path $HostsPath -Value "`n192.168.192.5 wmedubai.local" -Verbose
 
 }
 
